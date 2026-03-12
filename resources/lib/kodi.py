@@ -137,6 +137,12 @@ class Kodi:
                     play_stream = self.build_stream_url(unquote(track.get_stream().get('url')))
                     playlist.add(play_stream, play_item)
                 self.log("Playing Playlist %s from position %d" % (playlist.size(), playlist.getposition()))
+                setResolvedUrl(self.plugin.handle, False, ListItem(offscreen=True))
+                # In GUI mode the playlist player handles playback automatically (plugin URL
+                # is at position 0, segments at 1..n). In JSON-RPC mode no playlist player
+                # is active, so we start playback explicitly.
+                if playlist.size() == len(tracks):
+                    Player().play(playlist, None, False, 0)
         else:
             self.log("Playing Single Video")
             for track in tracks:
