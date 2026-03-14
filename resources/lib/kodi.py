@@ -132,17 +132,18 @@ class Kodi:
                 for track in tracks:
                     self.render(track)
             else:
+                pre_size = playlist.size()
                 for track in tracks:
                     play_item = self.render_video(track)
                     play_stream = self.build_stream_url(unquote(track.get_stream().get('url')))
                     playlist.add(play_stream, play_item)
                 self.log("Playing Playlist %s from position %d" % (playlist.size(), playlist.getposition()))
                 setResolvedUrl(self.plugin.handle, False, ListItem(offscreen=True))
-                # In GUI mode the playlist player handles playback automatically (plugin URL
-                # is at position 0, segments at 1..n). In JSON-RPC mode no playlist player
-                # is active, so we start playback explicitly.
-                if playlist.size() == len(tracks):
-                    Player().play(playlist, None, False, 0)
+                # In GUI mode Kodi adds exactly 1 item (the plugin URL) before running the
+                # plugin, so pre_size == 1. In JSON-RPC mode no item is pre-added, so
+                # pre_size != 1 — start playback explicitly from the first new track.
+                if pre_size != 1:
+                    Player().play(playlist, None, False, pre_size)
         else:
             self.log("Playing Single Video")
             for track in tracks:
